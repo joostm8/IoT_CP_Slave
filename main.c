@@ -139,6 +139,8 @@
 
 #define APP_FEATURE_NOT_SUPPORTED       BLE_GATT_STATUS_ATTERR_APP_BEGIN + 2        /**< Reply when unsupported features are requested. */
 
+// Added defines
+#define TEMPERATURE_MEASUREMENT_INTERVAL APP_TIMER_TICKS(1000, APP_TIMER_PRESCALER) /**< Temperature measurement interval (ticks). */
 
 static uint16_t  m_conn_handle = BLE_CONN_HANDLE_INVALID;     /**< Handle of the current connection. */
 static ble_bas_t m_bas;                                       /**< Structure used to identify the battery service. */
@@ -152,6 +154,11 @@ static sensorsim_cfg_t   m_temp_celcius_sim_cfg;              /**< Temperature s
 static sensorsim_state_t m_temp_celcius_sim_state;            /**< Temperature simulator state. */
 
 APP_TIMER_DEF(m_battery_timer_id);                            /**< Battery timer. */
+APP_TIMER_DEF(m_temperature_measurement_timer_id);						/**< Temperature Measurement Timer. */
+/*
+Note to self:
+APP_TIMER_DEF(id) defines the given id as a timer id, to be used later on
+*/
 
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HEALTH_THERMOMETER_SERVICE, BLE_UUID_TYPE_BLE},
                                    {BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
@@ -322,6 +329,19 @@ static void battery_level_meas_timeout_handler(void * p_context)
     battery_level_update();
 }
 
+/**@brief Function for handling the Temperature measurement timer timeout, based on battery measurement timer timeout.
+ *
+ * @details This function will be called each time the temperature measurement timer expires.
+ *
+ * @param[in] p_context   Pointer used for passing some arbitrary information (context) from the
+ *                        app_start_timer() call to the timeout handler.
+ */
+static void temperature_measurement_timeout_handler(void * p_context)
+{
+		UNUSED_PARAMETER(p_context);
+		temperature_measurement_send();
+}
+
 
 /**@brief Function for populating simulated health thermometer measurement.
  */
@@ -374,6 +394,11 @@ static void timers_init(void)
                                 APP_TIMER_MODE_REPEATED,
                                 battery_level_meas_timeout_handler);
     APP_ERROR_CHECK(err_code);
+		//Additional timer, which will be used for the periodic temperature measurements
+		err_code = app_timer_create(&m_temperature_measurement_timer_id,
+																APP_TIMER_MODE_REPEATED,
+																temperature_measurement_timeout_handler);
+		APP_ERROR_CHECK(err_code);
 }
 
 
@@ -566,6 +591,9 @@ static void application_timers_start(void)
     // Start application timers.
     err_code = app_timer_start(m_battery_timer_id, BATTERY_LEVEL_MEAS_INTERVAL, NULL);
     APP_ERROR_CHECK(err_code);
+		// also start the additional temperature measurement timer
+		err_code = app_timer_start(m_temperature_measurement_timer_id, TEMPERATURE_MEASUREMENT_INTERVAL, NULL);
+		APP_ERROR_CHECK(err_code);
 }
 
 
