@@ -332,7 +332,7 @@ static void temperature_measurement_timeout_handler(void * p_context)
 }
 
 
-/**@brief Function for populating simulated health thermometer measurement.
+/**@brief Function for populating health thermometer measurement.
  */
 static void hts_measurement(ble_hts_meas_t * p_meas)
 {
