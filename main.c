@@ -355,9 +355,15 @@ static void hts_sim_measurement(ble_hts_meas_t * p_meas)
     p_meas->time_stamp_present = true;
     p_meas->temp_type_present  = (TEMP_TYPE_AS_CHARACTERISTIC ? false : true);
 
-    celciusX100 = sensorsim_measure(&m_temp_celcius_sim_state, &m_temp_celcius_sim_cfg);
+    // celciusX100 = sensorsim_measure(&m_temp_celcius_sim_state, &m_temp_celcius_sim_cfg);
+		int32_t p_temp;
+		uint32_t err_code;
+		err_code = sd_temp_get(&p_temp);
+		APP_ERROR_CHECK(err_code);
+		celciusX100 = (p_temp / 4);
 
-    p_meas->temp_in_celcius.exponent = -2;
+    // p_meas->temp_in_celcius.exponent = -2;
+		p_meas->temp_in_celcius.exponent = 0;
     p_meas->temp_in_celcius.mantissa = celciusX100;
     p_meas->temp_in_fahr.exponent    = -2;
     p_meas->temp_in_fahr.mantissa    = (32 * 100) + ((celciusX100 * 9) / 5);
