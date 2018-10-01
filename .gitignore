@@ -54,3 +54,5 @@ dkms.conf
 # build and hex files
 **/_build
 **/hex
+*.Joost
+*.Robbe
