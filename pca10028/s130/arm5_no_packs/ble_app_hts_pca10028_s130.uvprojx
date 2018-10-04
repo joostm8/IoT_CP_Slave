@@ -1756,6 +1756,11 @@
                 </FileArmAds>
               </FileOption>
             </File>
+            <File>
+              <FileName>our_service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\our_service.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -4827,6 +4832,11 @@
                   </Cads>
                 </FileArmAds>
               </FileOption>
+            </File>
+            <File>
+              <FileName>our_service.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\..\our_service.c</FilePath>
             </File>
           </Files>
         </Group>

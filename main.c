@@ -75,6 +75,7 @@
 #include "fds.h"
 #include "fstorage.h"
 #include "ble_conn_state.h"
+#include "our_service.h"
 
 #define NRF_LOG_MODULE_NAME "APP"
 #include "nrf_log.h"
@@ -141,6 +142,7 @@
 static uint16_t  m_conn_handle = BLE_CONN_HANDLE_INVALID;     /**< Handle of the current connection. */
 static ble_bas_t m_bas;                                       /**< Structure used to identify the battery service. */
 static ble_hts_t m_hts;                                       /**< Structure used to identify the health thermometer service. */
+static ble_os_t m_our_service;																/**< Structure used to identify our service. */
 
 static sensorsim_cfg_t   m_battery_sim_cfg;                   /**< Battery Level sensor simulator configuration. */
 static sensorsim_state_t m_battery_sim_state;                 /**< Battery Level sensor simulator state. */
@@ -152,9 +154,9 @@ APP_TIMER_DEF(m_temperature_measurement_timer_id);						/**< Temperature Measure
 static ble_uuid_t m_adv_uuids[] = {{BLE_UUID_HEALTH_THERMOMETER_SERVICE, BLE_UUID_TYPE_BLE},
                                    {BLE_UUID_BATTERY_SERVICE, BLE_UUID_TYPE_BLE},
                                    {BLE_UUID_DEVICE_INFORMATION_SERVICE, BLE_UUID_TYPE_BLE}}; /**< Universally unique service identifiers. */
-
+																	 
 static void advertising_start(void);
-static void temperature_measurement_send(void);
+static void temperature_measurement_send(void);																										 
 
 /**@brief Callback function for asserts in the SoftDevice.
  *
@@ -551,6 +553,9 @@ static void services_init(void)
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
+		
+		// Initialize Our Service
+		our_service_init(&m_our_service);
 }
 
 
@@ -970,7 +975,15 @@ static void advertising_init(void)
     options.ble_adv_fast_interval = APP_ADV_INTERVAL;
     options.ble_adv_fast_timeout  = APP_ADV_TIMEOUT_IN_SECONDS;
 
-    err_code = ble_advertising_init(&advdata, NULL, &options, on_adv_evt, NULL);
+		// OUR_JOB: Create a scan response packet and include the list of UUIDs
+		ble_uuid_t m_custom_uuids[] = {BLE_UUID_OUR_SERVICE, BLE_UUID_TYPE_VENDOR_BEGIN};
+		ble_advdata_t srdata;
+		memset(&srdata, 0, sizeof(srdata));
+		srdata.uuids_complete.uuid_cnt = sizeof(m_custom_uuids) / sizeof(m_custom_uuids[0]);
+		srdata.uuids_complete.p_uuids = m_custom_uuids;
+	
+    err_code = ble_advertising_init(&advdata, &srdata, &options, on_adv_evt, NULL);
+		//err_code = ble_advertising_init(&advdata, NULL, &options, on_adv_evt, NULL);
     APP_ERROR_CHECK(err_code);
 }
 
