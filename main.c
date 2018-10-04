@@ -75,6 +75,7 @@
 #include "fds.h"
 #include "fstorage.h"
 #include "ble_conn_state.h"
+#include "update_rate_service.h"
 
 #define NRF_LOG_MODULE_NAME "APP"
 #include "nrf_log.h"
@@ -145,6 +146,7 @@
 static uint16_t  m_conn_handle = BLE_CONN_HANDLE_INVALID;     /**< Handle of the current connection. */
 static ble_bas_t m_bas;                                       /**< Structure used to identify the battery service. */
 static ble_hts_t m_hts;                                       /**< Structure used to identify the health thermometer service. */
+static ble_urs_t m_urs;
 
 static sensorsim_cfg_t   m_battery_sim_cfg;                   /**< Battery Level sensor simulator configuration. */
 static sensorsim_state_t m_battery_sim_state;                 /**< Battery Level sensor simulator state. */
@@ -564,6 +566,9 @@ static void services_init(void)
 
     err_code = ble_dis_init(&dis_init);
     APP_ERROR_CHECK(err_code);
+		
+		// Initialize Update Rate Service.
+		urs_service_init(&m_urs);
 }
 
 
